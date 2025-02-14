@@ -15,13 +15,14 @@
     </properties>
 
     <dependencies>
-            <!-- Selenium WebDriver -->
-        <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
+        <!-- Selenide -->
+        <!-- https://mvnrepository.com/artifact/com.codeborne/selenide -->
         <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <version>4.28.1</version>
+            <groupId>com.codeborne</groupId>
+            <artifactId>selenide</artifactId>
+            <version>7.7.2</version>
         </dependency>
+
 
 
         <!-- TestNG -->

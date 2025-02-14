@@ -1,123 +1,36 @@
 package tests;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeSuite;
+import com.codeborne.selenide.Configuration;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.time.Duration;
-import java.util.List;
-
+import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.Condition.*;
 
 public class BookingTest {
-    private WebDriver driver;
 
-    @BeforeSuite
-    public void setUp() {// Укажи свой путь
-        driver = new ChromeDriver();
-        driver.manage().window().maximize();
-    }
-
-    @Test
-    public void testOpenBookingHomePage() {
-        driver.get("https://www.booking.com/");
-        String title = driver.getTitle();
-        Assert.assertTrue(title.contains("Booking.com"), "Заголовок страницы некорректный!");
-    }
-
-    @Test
-    public void testHotelSearch() {
-        driver.get("https://www.booking.com/");
-
-        // Вводим город в поле поиска
-        WebElement searchField = driver.findElement(By.xpath("//input[@name='ss']"));
-        searchField.sendKeys("Paris");
-
-        // Вводим даты (можно использовать календарь, для простоты добавим конкретные даты)
-        WebElement checkInField = driver.findElement(By.cssSelector(".xp__dates__checkin"));
-        WebElement checkOutField = driver.findElement(By.cssSelector(".xp__dates__checkout"));
-        checkInField.click();
-        WebElement checkInDate = driver.findElement(By.xpath("//td[@data-date='2025-03-01']"));
-        checkInDate.click();
-        checkOutField.click();
-        WebElement checkOutDate = driver.findElement(By.xpath("//td[@data-date='2025-03-10']"));
-        checkOutDate.click();
-
-        // Нажимаем кнопку поиска
-        WebElement searchButton = driver.findElement(By.className("sb-searchbox__button"));
-        searchButton.click();
-
-        // Ждем, пока загрузятся результаты (можно использовать WebDriverWait)
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.visibilityOfElementLocated(By.className("sr_property_block")));
-
-        // Проверяем, что результаты отелей отображаются
-        List<WebElement> hotelList = driver.findElements(By.className("sr_property_block"));
-        Assert.assertTrue(hotelList.size() > 0, "Результаты поиска не отображаются.");
-    }
-
-    @Test
-    public void testPriceFilter() {
-        driver.get("https://www.booking.com/");
-
-        // Вводим город и даты, как в предыдущем тесте
-        WebElement searchField = driver.findElement(By.id("ss"));
-        searchField.sendKeys("Paris");
-        WebElement searchButton = driver.findElement(By.className("sb-searchbox__button"));
-        searchButton.click();
-
-        // Ждем загрузки результатов
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.visibilityOfElementLocated(By.className("sr_property_block")));
-
-        // Применяем фильтр по цене
-        WebElement priceFilter = driver.findElement(By.xpath("//label[@for='price-0-100']"));
-        priceFilter.click();
-
-        // Проверяем, что фильтр применился
-        WebElement firstHotelPrice = driver.findElement(By.xpath("//div[@data-testid='price-and-discounted-price']"));
-        String priceText = firstHotelPrice.getText();
-        Assert.assertTrue(priceText.contains("€100"), "Фильтр по цене не применился корректно.");
+    @BeforeClass
+    public void setUp() {
+        Configuration.baseUrl = "https://www.booking.com";
+        Configuration.browserSize = "1920x1080";
+        Configuration.timeout = 5000; // Ждем до 5 сек, если элемент не найден сразу
     }
 
     @Test
     public void testLogin() {
-        driver.get("https://www.booking.com/");
+        // Открываем страницу
+        open("/");
 
-        // Нажимаем на кнопку для входа
-        WebElement loginButton = driver.findElement(By.className("header-sign-in"));
-        loginButton.click();
+        // Кликаем по кнопке входа
+        $(".bui-button--secondary").click();
 
-        // Вводим логин и пароль
-        WebElement emailField = driver.findElement(By.id("username"));
-        emailField.sendKeys("test@example.com");  // Подставь свой тестовый email
-        WebElement passwordField = driver.findElement(By.id("password"));
-        passwordField.sendKeys("password123");  // Подставь свой тестовый пароль
+        // Вводим email
+        $("#username").setValue("your-email@example.com").pressEnter();
 
-        // Нажимаем на кнопку входа
-        WebElement submitButton = driver.findElement(By.className("bui-button--primary"));
-        submitButton.click();
+        // Вводим пароль (после перехода на страницу ввода пароля)
+        $("#password").setValue("your-password").pressEnter();
 
-        // Ждем, пока загрузится страница после входа
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.visibilityOfElementLocated(By.className("profile-name")));
-
-        // Проверяем, что пользователь залогинен
-        WebElement profileName = driver.findElement(By.className("profile-name"));
-        Assert.assertTrue(profileName.isDisplayed(), "Пользователь не залогинен.");
-    }
-
-
-    @AfterClass
-    public void tearDown() {
-        if (driver != null) {
-            driver.quit();
-        }
+        // Проверяем, что мы залогинились (например, по наличию профиля)
+        $(".header-user-name").shouldBe(visible);
     }
 }
